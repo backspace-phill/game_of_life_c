@@ -36,18 +36,18 @@ void fill_cell_matrix(cell in[MAX_COL][MAX_ROW]) {
   for (int col = 0; col < MAX_COL; col++) {
     for (int row = 0; row < MAX_ROW; row++) {
       in[col][row].alive = false;
-      in[col][row].neighbours = 0;      
+      in[col][row].neighbours = 0;
     }
   }
 }
 
 int get_modified_index_for_matrix(int index, bool is_col) {
   if (is_col && index < 0) {
-    return (MAX_COL - index) % MAX_COL;
+    return (MAX_COL + index) % MAX_COL;
   } else if (is_col) {
     return index % MAX_COL;
   } else if (!is_col && index < 0) {
-    return (MAX_ROW - index) % MAX_ROW;
+    return (MAX_ROW + index) % MAX_ROW;
   } else if (!is_col) {
     return index % MAX_ROW;
   } else {
@@ -83,7 +83,7 @@ void copy_cell_matrix(cell in[MAX_COL][MAX_ROW], cell output[MAX_COL][MAX_ROW]) 
 
 void update_neighbours(cell in[MAX_COL][MAX_ROW]) {
   cell output[MAX_COL][MAX_ROW];
-  copy_cell_matrix(in, output); 
+  copy_cell_matrix(in, output);
   for (int col = 0; col < MAX_COL; col++) {
     for (int row = 0; row < MAX_ROW; row++) {
       output[col][row].neighbours = get_neighbour_of_cell_in_matrix(in, col, row);
@@ -96,7 +96,7 @@ void update_alive_state(cell in[MAX_COL][MAX_ROW]) {
   for (int col = 0; col < MAX_COL; col++) {
     for (int row = 0; row < MAX_ROW; row++) {
       if(in[col][row].neighbours == 3 || (in[col][row].neighbours == 2 || in[col][row].neighbours == 3) && in[col][row].alive) {
-	in[col][row].alive = true;  
+	in[col][row].alive = true;
       } else {
 	in[col][row].alive = false;
       }
@@ -108,7 +108,14 @@ void remove_all_text() {
   printf("\e[1;1H\e[2J");
 }
 
+void test_get_modified_index_for_matrix() {
+  assert(get_modified_index_for_matrix(-1, true) == MAX_COL-1);
+  assert(get_modified_index_for_matrix(MAX_COL+1, true) == 1);
+  assert(get_modified_index_for_matrix(MAX_COL, true) == 0);
+}
+
 int main() {
+  test_get_modified_index_for_matrix();
   cell play_field[MAX_COL][MAX_ROW];
 
   fill_cell_matrix(play_field);
@@ -116,8 +123,8 @@ int main() {
   play_field[2][1].alive = true;
   play_field[3][2].alive = true;
   play_field[1][3].alive = true;
-  play_field[2][3].alive = true; 
-  play_field[3][3].alive = true; 
+  play_field[2][3].alive = true;
+  play_field[3][3].alive = true;
 
   for(int i=0; i <= MAX_ROUNDS; i++) {
 
@@ -128,14 +135,14 @@ int main() {
     remove_all_text();
 
     usleep(10000);
-    
+
     print_cell_matrix(play_field);
 
     update_alive_state(play_field);
-  
+
   }
 
   // TODO: Fix the Modulo for the Board edges.
-  
+
   return 0;
 }
