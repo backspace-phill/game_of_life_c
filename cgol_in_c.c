@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
+#include <unistd.h>
 
 #define MAX_ROUNDS 100
 
@@ -40,11 +41,25 @@ void fill_cell_matrix(cell in[MAX_COL][MAX_ROW]) {
   }
 }
 
+int get_modified_index_for_matrix(int index, bool is_col) {
+  if (is_col && index < 0) {
+    return (MAX_COL - index) % MAX_COL;
+  } else if (is_col) {
+    return index % MAX_COL;
+  } else if (!is_col && index < 0) {
+    return (MAX_ROW - index) % MAX_ROW;
+  } else if (!is_col) {
+    return index % MAX_ROW;
+  } else {
+    assert(false);
+  }
+}
+
 int get_neighbour_of_cell_in_matrix(cell in[MAX_COL][MAX_ROW], int selected_col, int selected_row) {
   int amount = 0;
   for (int col = selected_col - 1; col <= selected_col + 1; col++) {
     for (int row = selected_row - 1; row <= selected_row + 1; row++) {
-      if (in[col % (MAX_COL)][row % (MAX_ROW)].alive) {
+      if (in[get_modified_index_for_matrix(col, true)][get_modified_index_for_matrix(row, false)].alive) {
 	amount++;
       }
     }
@@ -89,6 +104,10 @@ void update_alive_state(cell in[MAX_COL][MAX_ROW]) {
   }
 }
 
+void remove_all_text() {
+  printf("\e[1;1H\e[2J");
+}
+
 int main() {
   cell play_field[MAX_COL][MAX_ROW];
 
@@ -105,6 +124,10 @@ int main() {
     update_neighbours(play_field);
 
     /* print_neighbours_amount(play_field); */
+
+    remove_all_text();
+
+    usleep(10000);
     
     print_cell_matrix(play_field);
 
