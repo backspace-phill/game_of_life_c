@@ -4,7 +4,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#define MAX_ROUNDS 10
+#define MAX_ROUNDS 1000
+#define WAIT_TIME_MICRO 10000 
 
 size_t MAX_COL = 50;
 size_t MAX_ROW = 50;
@@ -153,8 +154,8 @@ int main(int argc, char** argv) {
       return 74;
     }
 
-    fseek(map_file, 0, SEEK_END); // seek to end of file
-    int map_file_size = ftell(map_file); // get current file pointer
+    fseek(map_file, 0, SEEK_END);
+    int map_file_size = ftell(map_file);
     fseek(map_file, 0, SEEK_SET);
     char *file_contents = malloc(map_file_size);
     fread(file_contents, sizeof(char), map_file_size, map_file);
@@ -173,9 +174,7 @@ int main(int argc, char** argv) {
 
     remove_all_text();
 
-    usleep(100000);
-
-    /* sleep(1); */
+    usleep(WAIT_TIME_MICRO);
     
     print_cell_matrix(play_field);
 
