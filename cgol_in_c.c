@@ -2,11 +2,13 @@
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
+#include <stdlib.h>
 
-#define MAX_ROUNDS 100
+#define MAX_ROUNDS 1000
+#define WAIT_TIME_MICRO 10000 
 
-const size_t MAX_COL = 20;
-const size_t MAX_ROW = 20;
+size_t MAX_COL = 50;
+size_t MAX_ROW = 50;
 
 typedef struct cell {
   bool alive;
@@ -114,35 +116,71 @@ void test_get_modified_index_for_matrix() {
   assert(get_modified_index_for_matrix(MAX_COL, true) == 0);
 }
 
-int main() {
+void parse_file_into_playfield(char *input, cell playfield[MAX_COL][MAX_ROW]) {
+  {
+    int cc = 0;
+    for (int i=0; i<MAX_COL; i++) {
+      for (int j=0; j<MAX_ROW; j++) {
+	if(input[cc] != '0' && input[cc] != '1'){
+	  cc++;
+	}
+	playfield[j][i].alive = input[cc] == '1';
+	cc++;
+      }
+    }
+  }
+}
+
+int main(int argc, char** argv) {
+
   test_get_modified_index_for_matrix();
+  
   cell play_field[MAX_COL][MAX_ROW];
 
   fill_cell_matrix(play_field);
 
-  play_field[2][1].alive = true;
-  play_field[3][2].alive = true;
-  play_field[1][3].alive = true;
-  play_field[2][3].alive = true;
-  play_field[3][3].alive = true;
+  if (argc == 1) {
+    play_field[2][1].alive = true;
+    play_field[3][2].alive = true;
+    play_field[1][3].alive = true;
+    play_field[2][3].alive = true;
+    play_field[3][3].alive = true;    
+  } else if (argc == 2) {
+    
+    FILE *map_file = fopen(argv[1], "r");
 
+    if(!map_file) {
+      perror("Cannot get file!");
+      return 74;
+    }
+
+    fseek(map_file, 0, SEEK_END);
+    int map_file_size = ftell(map_file);
+    fseek(map_file, 0, SEEK_SET);
+    char *file_contents = malloc(map_file_size);
+    fread(file_contents, sizeof(char), map_file_size, map_file);
+    printf("%s", file_contents);
+    MAX_COL = strtol(file_contents, NULL, 10);
+    MAX_ROW = strtol(file_contents+sizeof(char)*4, NULL, 10);
+    printf("MAX_ROW = %lu\n", MAX_ROW);
+    parse_file_into_playfield(file_contents+sizeof(char)*8, play_field);
+    print_cell_matrix(play_field);
+    
+  }
+  
   for(int i=0; i <= MAX_ROUNDS; i++) {
 
     update_neighbours(play_field);
 
-    /* print_neighbours_amount(play_field); */
-
     remove_all_text();
 
-    usleep(10000);
-
+    usleep(WAIT_TIME_MICRO);
+    
     print_cell_matrix(play_field);
 
     update_alive_state(play_field);
 
   }
-
-  // TODO: Fix the Modulo for the Board edges.
-
+  
   return 0;
 }
