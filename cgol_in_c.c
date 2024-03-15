@@ -157,13 +157,15 @@ int main(int argc, char** argv) {
     fseek(map_file, 0, SEEK_END);
     int map_file_size = ftell(map_file);
     fseek(map_file, 0, SEEK_SET);
-    char *file_contents = malloc(map_file_size);
+    char *file_contents = malloc(map_file_size + sizeof(char));
     fread(file_contents, sizeof(char), map_file_size, map_file);
+    file_contents[map_file_size] = '\0';
     printf("%s", file_contents);
     MAX_COL = strtol(file_contents, NULL, 10);
     MAX_ROW = strtol(file_contents+sizeof(char)*4, NULL, 10);
     printf("MAX_ROW = %lu\n", MAX_ROW);
     parse_file_into_playfield(file_contents+sizeof(char)*8, play_field);
+    free(file_contents);
     print_cell_matrix(play_field);
     
   }
